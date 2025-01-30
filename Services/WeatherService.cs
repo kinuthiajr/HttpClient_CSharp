@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
+using static client1.Models.WeatherModel;
 
 namespace client1.Services
 {
@@ -15,7 +17,7 @@ namespace client1.Services
             _config = config;
         }
 
-        public async Task<string> GetWeatherAsync(string location)
+        public async Task<WeatherResponse> GetWeatherAsync(string location)
         {
             var client = _httpClientFactory.CreateClient();
             string apiKey = _config["ApiKey"];
@@ -23,7 +25,12 @@ namespace client1.Services
 
             var response = await client.GetAsync(requestUrl);
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadAsStringAsync();
+            
+            // read and deserialize
+            var jsonString = await response.Content.ReadAsStringAsync();
+            var weatherData = JsonSerializer.Deserialize<WeatherResponse>(jsonString);
+
+            return weatherData;
         }
     }
 }
